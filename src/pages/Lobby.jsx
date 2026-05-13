@@ -9,6 +9,10 @@ export default function Lobby({ room, myId, error, onClearError }) {
     socket.emit('start_game', { code: room.code });
   }
 
+  function handleLeave() {
+    socket.emit('leave_room');
+  }
+
   return (
     <div className="container" style={{ paddingTop: 40 }}>
       <p style={{ textAlign: 'center', color: '#aaa', marginBottom: 4 }}>Código de sala</p>
@@ -37,6 +41,13 @@ export default function Lobby({ room, myId, error, onClearError }) {
       <PlayerList players={room.players} myId={myId} />
 
       <div style={{ marginTop: 32 }}>
+        <button
+          onClick={handleLeave}
+          style={{ width: '100%', background: '#333', marginBottom: 12 }}
+        >
+          ← Salir de la sala
+        </button>
+
         {isHost ? (
           <>
             {room.players.length < 2 && (

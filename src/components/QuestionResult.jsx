@@ -2,23 +2,22 @@ const OPTION_COLORS = ['#e94560', '#0f3460', '#533483', '#e8a838'];
 
 export default function QuestionResult({ game, myId }) {
   const {
-    question,
     options = [],
     correctIndex,
     playerAnswers = {},
-    scoreboard = [],
     questionNumber,
     totalQuestions,
     timeLeft,
   } = game;
 
   const myResult = playerAnswers[myId];
+  const players = Object.entries(playerAnswers).sort((a, b) => b[1].points - a[1].points);
 
   return (
     <div className="container" style={{ paddingTop: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, fontSize: 13, color: '#aaa' }}>
         <span>Pregunta {questionNumber}/{totalQuestions}</span>
-        <span style={{ color: timeLeft <= 2 ? '#e94560' : '#aaa' }}>Siguiente en {timeLeft}s</span>
+        <span style={{ color: timeLeft <= 2 ? '#e94560' : '#aaa' }}>Scoreboard en {timeLeft}s</span>
       </div>
 
       {myResult && (
@@ -29,10 +28,13 @@ export default function QuestionResult({ game, myId }) {
           border: `2px solid ${myResult.correct ? '#4CAF50' : '#e94560'}`,
           marginBottom: 16,
           textAlign: 'center',
-          fontWeight: 'bold',
-          fontSize: 18,
         }}>
-          {myResult.correct ? `✓ ¡Correcto! +${myResult.points} pts` : '✗ Incorrecto'}
+          <div style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 4 }}>
+            {myResult.correct ? `✓ ¡Correcto! +${myResult.points} pts` : '✗ Incorrecto'}
+          </div>
+          <div style={{ fontSize: 13, color: '#aaa' }}>
+            {myResult.timeSpent !== null ? `Respondiste en ${myResult.timeSpent}s` : 'No respondiste'}
+          </div>
         </div>
       )}
 
@@ -75,25 +77,35 @@ export default function QuestionResult({ game, myId }) {
         ))}
       </div>
 
-      <h3 style={{ marginBottom: 10, color: '#aaa', fontWeight: 'normal' }}>Scoreboard</h3>
-      {scoreboard.map((p, i) => (
+      <h3 style={{ marginBottom: 10, color: '#aaa', fontWeight: 'normal' }}>Esta pregunta</h3>
+      {players.map(([id, p]) => (
         <div
-          key={p.id}
+          key={id}
           style={{
             display: 'flex',
             justifyContent: 'space-between',
-            padding: '8px 12px',
+            alignItems: 'center',
+            padding: '10px 14px',
             marginBottom: 6,
             borderRadius: 8,
-            background: p.id === myId ? '#1e1e3a' : '#16213e',
-            border: p.id === myId ? '1px solid #e94560' : '1px solid transparent',
+            background: id === myId ? '#1e1e3a' : '#16213e',
+            border: `1px solid ${id === myId ? '#e94560' : 'transparent'}`,
           }}
         >
-          <span>
-            <span style={{ color: '#aaa', marginRight: 8 }}>#{i + 1}</span>
-            {p.nickname}
-          </span>
-          <span style={{ fontWeight: 'bold' }}>{p.score.toLocaleString()} pts</span>
+          <span style={{ fontWeight: id === myId ? 'bold' : 'normal' }}>{p.nickname}</span>
+          <div style={{ display: 'flex', gap: 16, fontSize: 13, alignItems: 'center' }}>
+            {p.timeSpent !== null ? (
+              <span style={{ color: '#aaa' }}>{p.timeSpent}s</span>
+            ) : (
+              <span style={{ color: '#555' }}>—</span>
+            )}
+            <span style={{
+              fontWeight: 'bold',
+              color: p.correct ? '#4CAF50' : p.timeSpent !== null ? '#e94560' : '#555',
+            }}>
+              {p.points > 0 ? `+${p.points}` : p.timeSpent !== null ? '0' : 'no respondió'}
+            </span>
+          </div>
         </div>
       ))}
     </div>

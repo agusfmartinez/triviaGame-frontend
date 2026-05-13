@@ -1,7 +1,20 @@
-export default function GameOver({ game, myId, onGoHome }) {
-  const { scoreboard = [], winner } = game;
+import { useState, useEffect } from 'react';
 
-  const medals = ['🥇', '🥈', '🥉'];
+const medals = ['🥇', '🥈', '🥉'];
+
+export default function GameOver({ game, myId, rematch, onVoteRematch, onGoHome }) {
+  const { scoreboard = [], winner } = game;
+  const { count, totalPlayers, timerStarted, timeLimit, myVoted } = rematch;
+  const [timeLeft, setTimeLeft] = useState(timeLimit);
+
+  useEffect(() => {
+    if (!timerStarted) return;
+    setTimeLeft(timeLimit);
+    const interval = setInterval(() => {
+      setTimeLeft(t => (t <= 1 ? 0 : t - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timerStarted, timeLimit]);
 
   return (
     <div className="container" style={{ paddingTop: 40, textAlign: 'center' }}>
@@ -28,9 +41,7 @@ export default function GameOver({ game, myId, onGoHome }) {
               border: p.id === myId ? '2px solid #e94560' : '2px solid transparent',
             }}
           >
-            <span style={{ fontSize: 20 }}>
-              {medals[i] || `#${i + 1}`}
-            </span>
+            <span style={{ fontSize: 20 }}>{medals[i] || `#${i + 1}`}</span>
             <span style={{ flex: 1, textAlign: 'left', marginLeft: 12, fontWeight: p.id === myId ? 'bold' : 'normal' }}>
               {p.nickname}
             </span>
@@ -41,9 +52,34 @@ export default function GameOver({ game, myId, onGoHome }) {
         ))}
       </div>
 
-      <button onClick={onGoHome} style={{ width: '100%' }}>
-        Volver al inicio
-      </button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <button
+          onClick={onVoteRematch}
+          disabled={myVoted}
+          style={{
+            width: '100%',
+            fontSize: 18,
+            padding: 16,
+            background: myVoted ? '#333' : '#4CAF50',
+          }}
+        >
+          {myVoted ? '✓ Votaste volver a jugar' : '🔄 Volver a jugar'}
+        </button>
+
+        {(timerStarted || count > 0) && (
+          <p style={{ fontSize: 13, color: '#aaa', margin: 0 }}>
+            {count}/{totalPlayers} quieren jugar de nuevo
+            {timerStarted && ` · empieza en ${timeLeft}s`}
+          </p>
+        )}
+
+        <button
+          onClick={onGoHome}
+          style={{ width: '100%', background: '#333', fontSize: 16 }}
+        >
+          Volver al inicio
+        </button>
+      </div>
     </div>
   );
 }

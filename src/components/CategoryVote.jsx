@@ -1,7 +1,7 @@
 const COLORS = ['#e94560', '#0f3460', '#533483', '#e8a838'];
 
 export default function CategoryVote({ game, room, myId, onVote }) {
-  const { categories = [], votes = [0, 0, 0, 0], timeLeft, myVote } = game;
+  const { categories = [], votes = [0, 0, 0, 0], timeLeft, myVote, currentRound, totalRounds } = game;
   const totalVotes = votes.reduce((a, b) => a + b, 0);
 
   function handleVote(idx) {
@@ -12,7 +12,9 @@ export default function CategoryVote({ game, room, myId, onVote }) {
   return (
     <div className="container" style={{ paddingTop: 32 }}>
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <p style={{ color: '#aaa', marginBottom: 4 }}>Votación de categoría</p>
+        <p style={{ color: '#aaa', marginBottom: 2, fontSize: 13 }}>
+          Ronda {currentRound}/{totalRounds} · Votación de categoría
+        </p>
         <div style={{ fontSize: 48, fontWeight: 'bold', color: timeLeft <= 5 ? '#e94560' : '#eee' }}>
           {timeLeft}s
         </div>

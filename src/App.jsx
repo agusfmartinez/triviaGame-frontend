@@ -4,12 +4,15 @@ import Home from './pages/Home';
 import Lobby from './pages/Lobby';
 import Game from './pages/Game';
 
+const REMATCH_INITIAL = { count: 0, totalPlayers: 0, timerStarted: false, timeLimit: 30, myVoted: false };
+
 export default function App() {
   const [page, setPage] = useState('home');
   const [room, setRoom] = useState(null);
   const [myId, setMyId] = useState(null);
   const [error, setError] = useState('');
   const [game, setGame] = useState(null);
+  const [rematch, setRematch] = useState(REMATCH_INITIAL);
 
   useEffect(() => {
     if (socket.connected) setMyId(socket.id);
@@ -33,11 +36,13 @@ export default function App() {
     socket.on('game_started', ({ room }) => {
       setRoom(room);
       setGame(null);
+      setRematch(REMATCH_INITIAL);
       setPage('game');
     });
 
     socket.on('phase_changed', (data) => {
       setGame({ ...data, answeredCount: 0, timeLeft: data.timeLimit || 0 });
+      if (data.phase === 'GAME_OVER') setRematch(REMATCH_INITIAL);
     });
 
     socket.on('timer_tick', ({ timeLeft }) => {
@@ -52,6 +57,37 @@ export default function App() {
       setGame(prev => prev ? { ...prev, answeredCount: count } : prev);
     });
 
+    socket.on('ready_update', ({ readyCount, totalPlayers }) => {
+      setGame(prev => prev ? { ...prev, readyCount, totalPlayers } : prev);
+    });
+
+    socket.on('rematch_update', ({ count, totalPlayers }) => {
+      setRematch(prev => ({ ...prev, count, totalPlayers }));
+    });
+
+    socket.on('rematch_timer_started', ({ timeLimit }) => {
+      setRematch(prev => ({ ...prev, timerStarted: true, timeLimit }));
+    });
+
+    socket.on('rematch_start', ({ room }) => {
+      setRoom(room);
+      setGame(null);
+      setRematch(REMATCH_INITIAL);
+      setPage('lobby');
+    });
+
+    socket.on('go_home', () => {
+      setPage('home');
+      setRoom(null);
+      setGame(null);
+      setRematch(REMATCH_INITIAL);
+    });
+
+    socket.on('left_room', () => {
+      setPage('home');
+      setRoom(null);
+    });
+
     socket.on('error', ({ message }) => setError(message));
 
     return () => {
@@ -64,6 +100,12 @@ export default function App() {
       socket.off('timer_tick');
       socket.off('vote_update');
       socket.off('answer_submitted');
+      socket.off('ready_update');
+      socket.off('rematch_update');
+      socket.off('rematch_timer_started');
+      socket.off('rematch_start');
+      socket.off('go_home');
+      socket.off('left_room');
       socket.off('error');
     };
   }, []);
@@ -78,10 +120,21 @@ export default function App() {
     setGame(prev => prev ? { ...prev, myAnswer: answerIndex } : prev);
   }
 
+  function handleReadyNext() {
+    socket.emit('ready_next', { code: room.code });
+    setGame(prev => prev ? { ...prev, myReady: true } : prev);
+  }
+
+  function handleVoteRematch() {
+    socket.emit('vote_rematch', { code: room.code });
+    setRematch(prev => ({ ...prev, myVoted: true }));
+  }
+
   function handleGoHome() {
     setPage('home');
     setRoom(null);
     setGame(null);
+    setRematch(REMATCH_INITIAL);
     setError('');
   }
 
@@ -91,8 +144,11 @@ export default function App() {
         game={game}
         room={room}
         myId={myId}
+        rematch={rematch}
         onVote={handleVote}
         onAnswer={handleAnswer}
+        onReadyNext={handleReadyNext}
+        onVoteRematch={handleVoteRematch}
         onGoHome={handleGoHome}
       />
     );
