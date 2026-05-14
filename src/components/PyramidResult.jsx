@@ -1,3 +1,5 @@
+import AttackLog from './AttackLog';
+
 export default function PyramidResult({ game, myId }) {
   const {
     movements = {},
@@ -8,6 +10,7 @@ export default function PyramidResult({ game, myId }) {
     winnerId,
     winnerNickname,
     timeLeft,
+    attackLog = [],
   } = game;
 
   const myAnswer = playerAnswers[myId];
@@ -75,6 +78,8 @@ export default function PyramidResult({ game, myId }) {
       }}>
         ✓ Respuesta correcta: <strong>{options[correctIndex]}</strong>
       </div>
+
+      <AttackLog attackLog={attackLog} />
 
       <div style={{ marginBottom: 12 }}>
         {players.map(([id, p]) => {

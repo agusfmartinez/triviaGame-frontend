@@ -13,7 +13,7 @@ import GameOver from '../components/GameOver';
 
 const IS_DEV = import.meta.env.DEV;
 
-export default function Game({ game, room, myId, rematch, onVote, onAnswer, onReadyNext, onVoteStartPyramid, onReadyPyramid, onVoteRematch, onGoHome }) {
+export default function Game({ game, room, myId, rematch, onVote, onAnswer, onReadyNext, onUseAttack, onUseBombita, onVoteStartPyramid, onReadyPyramid, onVoteRematch, onGoHome }) {
   if (!game) {
     return (
       <div className="container" style={{ paddingTop: 60, textAlign: 'center' }}>
@@ -35,19 +35,19 @@ export default function Game({ game, room, myId, rematch, onVote, onAnswer, onRe
     case STATES.QUESTION_INTRO:
       content = <QuestionIntro {...props} />; break;
     case STATES.QUESTION_ACTIVE:
-      content = <QuestionActive {...props} onAnswer={onAnswer} />; break;
+      content = <QuestionActive {...props} onAnswer={onAnswer} onUseBombita={onUseBombita} />; break;
     case STATES.QUESTION_RESULT:
       content = <QuestionResult {...props} />; break;
     case STATES.SCOREBOARD:
-      content = <Scoreboard {...props} onReadyNext={onReadyNext} />; break;
+      content = <Scoreboard {...props} onReadyNext={onReadyNext} onUseAttack={onUseAttack} />; break;
     case STATES.PYRAMID_INTRO:
       content = <PyramidIntro {...props} onVoteStart={onVoteStartPyramid} />; break;
     case STATES.FINAL_PYRAMID:
-      content = <FinalPyramid {...props} onAnswer={onAnswer} />; break;
+      content = <FinalPyramid {...props} onAnswer={onAnswer} onUseBombita={onUseBombita} />; break;
     case STATES.PYRAMID_RESULT:
       content = <PyramidResult {...props} />; break;
     case STATES.PYRAMID_SCOREBOARD:
-      content = <PyramidScoreboard {...props} onReadyPyramid={onReadyPyramid} />; break;
+      content = <PyramidScoreboard {...props} onReadyPyramid={onReadyPyramid} onUseAttack={onUseAttack} />; break;
     case STATES.GAME_OVER:
       content = <GameOver {...props} rematch={rematch} onVoteRematch={onVoteRematch} onGoHome={onGoHome} />; break;
     default:

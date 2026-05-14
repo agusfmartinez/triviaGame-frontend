@@ -1,3 +1,5 @@
+import AttackLog from './AttackLog';
+
 const OPTION_COLORS = ['#e94560', '#0f3460', '#533483', '#e8a838'];
 
 export default function QuestionResult({ game, myId }) {
@@ -8,6 +10,7 @@ export default function QuestionResult({ game, myId }) {
     questionNumber,
     totalQuestions,
     timeLeft,
+    attackLog = [],
   } = game;
 
   const myResult = playerAnswers[myId];
@@ -76,6 +79,8 @@ export default function QuestionResult({ game, myId }) {
           </div>
         ))}
       </div>
+
+      <AttackLog attackLog={attackLog} />
 
       <h3 style={{ marginBottom: 10, color: '#aaa', fontWeight: 'normal' }}>Esta pregunta</h3>
       {players.map(([id, p]) => (

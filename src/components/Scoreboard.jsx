@@ -1,7 +1,15 @@
+import PowerupSelector from './PowerupSelector';
+
 const medals = ['🥇', '🥈', '🥉'];
 
-export default function Scoreboard({ game, myId, onReadyNext }) {
-  const { scoreboard = [], currentRound, totalRounds, isEndOfRound, isLast, timeLeft, readyCount = 0, totalPlayers = 0, myReady } = game;
+export default function Scoreboard({ game, room, myId, onReadyNext, onUseAttack }) {
+  const {
+    scoreboard = [], currentRound, totalRounds, isEndOfRound, isLast,
+    timeLeft, readyCount = 0, totalPlayers = 0, myReady,
+    availableAttacks = [], defenses = {}, myAttackUsed,
+  } = game;
+
+  const myDefense = defenses[myId] || null;
 
   return (
     <div className="container" style={{ paddingTop: 32 }}>
@@ -41,7 +49,18 @@ export default function Scoreboard({ game, myId, onReadyNext }) {
         );
       })}
 
-      <div style={{ marginTop: 24 }}>
+      <PowerupSelector
+        players={room?.players}
+        myId={myId}
+        availableAttacks={availableAttacks}
+        myDefense={myDefense}
+        myAttackUsed={myAttackUsed}
+        onUseAttack={(targetId, type) => {
+          if (onUseAttack) onUseAttack(targetId, type);
+        }}
+      />
+
+      <div style={{ marginTop: 16 }}>
         <button
           onClick={onReadyNext}
           disabled={!!myReady}

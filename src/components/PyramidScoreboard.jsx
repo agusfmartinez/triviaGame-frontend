@@ -32,7 +32,9 @@ function PyramidStep({ step, pyramidHeight, players, myId }) {
   );
 }
 
-export default function PyramidScoreboard({ game, myId, onReadyPyramid }) {
+import PowerupSelector from './PowerupSelector';
+
+export default function PyramidScoreboard({ game, room, myId, onReadyPyramid, onUseAttack }) {
   const {
     positions = {},
     pyramidHeight,
@@ -40,6 +42,9 @@ export default function PyramidScoreboard({ game, myId, onReadyPyramid }) {
     readyCount = 0,
     totalPlayers = 0,
     timeLeft,
+    availableAttacks = [],
+    defenses = {},
+    myAttackUsed,
     myReadyPyramid,
   } = game;
 
@@ -71,6 +76,15 @@ export default function PyramidScoreboard({ game, myId, onReadyPyramid }) {
           />
         ))}
       </div>
+
+      <PowerupSelector
+        players={room?.players}
+        myId={myId}
+        availableAttacks={availableAttacks}
+        myDefense={defenses[myId] || null}
+        myAttackUsed={myAttackUsed}
+        onUseAttack={(targetId, type) => { if (onUseAttack) onUseAttack(targetId, type); }}
+      />
 
       <button
         onClick={onReadyPyramid}

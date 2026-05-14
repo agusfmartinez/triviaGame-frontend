@@ -40,6 +40,14 @@ export default function App() {
       setPage('game');
     });
 
+    socket.on('effects_expired', () => {
+      setGame(prev => prev ? { ...prev, activeEffects: {} } : prev);
+    });
+
+    socket.on('bombita_result', ({ hideOptions }) => {
+      setGame(prev => prev ? { ...prev, bombitaHide: hideOptions } : prev);
+    });
+
     socket.on('pyramid_intro_update', ({ readyCount, totalPlayers }) => {
       setGame(prev => prev ? { ...prev, readyCount, totalPlayers } : prev);
     });
@@ -49,7 +57,7 @@ export default function App() {
     });
 
     socket.on('phase_changed', (data) => {
-      setGame({ ...data, answeredCount: 0, timeLeft: data.timeLimit || 0 });
+      setGame({ ...data, answeredCount: 0, answeredPlayers: [], bombitaHide: [], timeLeft: data.timeLimit || 0 });
       if (data.phase === 'GAME_OVER') setRematch(REMATCH_INITIAL);
     });
 
@@ -61,8 +69,12 @@ export default function App() {
       setGame(prev => prev ? { ...prev, votes } : prev);
     });
 
-    socket.on('answer_submitted', ({ count }) => {
-      setGame(prev => prev ? { ...prev, answeredCount: count } : prev);
+    socket.on('answer_submitted', ({ count, playerId }) => {
+      setGame(prev => prev ? {
+        ...prev,
+        answeredCount: count,
+        answeredPlayers: playerId ? [...(prev.answeredPlayers || []), playerId] : prev.answeredPlayers,
+      } : prev);
     });
 
     socket.on('ready_update', ({ readyCount, totalPlayers }) => {
@@ -109,6 +121,8 @@ export default function App() {
       socket.off('vote_update');
       socket.off('answer_submitted');
       socket.off('ready_update');
+      socket.off('effects_expired');
+      socket.off('bombita_result');
       socket.off('pyramid_intro_update');
       socket.off('pyramid_ready_update');
       socket.off('rematch_update');
@@ -133,6 +147,17 @@ export default function App() {
   function handleReadyNext() {
     socket.emit('ready_next', { code: room.code });
     setGame(prev => prev ? { ...prev, myReady: true } : prev);
+  }
+
+  function handleUseAttack(targetId, type) {
+    if (targetId && type) {
+      socket.emit('use_attack', { code: room.code, targetId, type });
+    }
+    setGame(prev => prev ? { ...prev, myAttackUsed: true } : prev);
+  }
+
+  function handleUseBombita() {
+    socket.emit('use_bombita', { code: room.code });
   }
 
   function handleVoteStartPyramid() {
@@ -168,6 +193,8 @@ export default function App() {
         onVote={handleVote}
         onAnswer={handleAnswer}
         onReadyNext={handleReadyNext}
+        onUseAttack={handleUseAttack}
+        onUseBombita={handleUseBombita}
         onVoteStartPyramid={handleVoteStartPyramid}
         onReadyPyramid={handleReadyPyramid}
         onVoteRematch={handleVoteRematch}
