@@ -5,11 +5,15 @@ import QuestionIntro from '../components/QuestionIntro';
 import QuestionActive from '../components/QuestionActive';
 import QuestionResult from '../components/QuestionResult';
 import Scoreboard from '../components/Scoreboard';
+import PyramidIntro from '../components/PyramidIntro';
+import FinalPyramid from '../components/FinalPyramid';
+import PyramidResult from '../components/PyramidResult';
+import PyramidScoreboard from '../components/PyramidScoreboard';
 import GameOver from '../components/GameOver';
 
 const IS_DEV = import.meta.env.DEV;
 
-export default function Game({ game, room, myId, rematch, onVote, onAnswer, onReadyNext, onVoteRematch, onGoHome }) {
+export default function Game({ game, room, myId, rematch, onVote, onAnswer, onReadyNext, onVoteStartPyramid, onReadyPyramid, onVoteRematch, onGoHome }) {
   if (!game) {
     return (
       <div className="container" style={{ paddingTop: 60, textAlign: 'center' }}>
@@ -36,16 +40,26 @@ export default function Game({ game, room, myId, rematch, onVote, onAnswer, onRe
       content = <QuestionResult {...props} />; break;
     case STATES.SCOREBOARD:
       content = <Scoreboard {...props} onReadyNext={onReadyNext} />; break;
+    case STATES.PYRAMID_INTRO:
+      content = <PyramidIntro {...props} onVoteStart={onVoteStartPyramid} />; break;
+    case STATES.FINAL_PYRAMID:
+      content = <FinalPyramid {...props} onAnswer={onAnswer} />; break;
+    case STATES.PYRAMID_RESULT:
+      content = <PyramidResult {...props} />; break;
+    case STATES.PYRAMID_SCOREBOARD:
+      content = <PyramidScoreboard {...props} onReadyPyramid={onReadyPyramid} />; break;
     case STATES.GAME_OVER:
       content = <GameOver {...props} rematch={rematch} onVoteRematch={onVoteRematch} onGoHome={onGoHome} />; break;
     default:
       content = null;
   }
 
+  const showSkip = IS_DEV && game.phase !== STATES.GAME_OVER;
+
   return (
     <>
       {content}
-      {IS_DEV && game.phase !== STATES.GAME_OVER && (
+      {showSkip && (
         <button
           onClick={handleSkip}
           style={{

@@ -40,6 +40,14 @@ export default function App() {
       setPage('game');
     });
 
+    socket.on('pyramid_intro_update', ({ readyCount, totalPlayers }) => {
+      setGame(prev => prev ? { ...prev, readyCount, totalPlayers } : prev);
+    });
+
+    socket.on('pyramid_ready_update', ({ readyCount, totalPlayers }) => {
+      setGame(prev => prev ? { ...prev, readyCount, totalPlayers } : prev);
+    });
+
     socket.on('phase_changed', (data) => {
       setGame({ ...data, answeredCount: 0, timeLeft: data.timeLimit || 0 });
       if (data.phase === 'GAME_OVER') setRematch(REMATCH_INITIAL);
@@ -101,6 +109,8 @@ export default function App() {
       socket.off('vote_update');
       socket.off('answer_submitted');
       socket.off('ready_update');
+      socket.off('pyramid_intro_update');
+      socket.off('pyramid_ready_update');
       socket.off('rematch_update');
       socket.off('rematch_timer_started');
       socket.off('rematch_start');
@@ -123,6 +133,16 @@ export default function App() {
   function handleReadyNext() {
     socket.emit('ready_next', { code: room.code });
     setGame(prev => prev ? { ...prev, myReady: true } : prev);
+  }
+
+  function handleVoteStartPyramid() {
+    socket.emit('vote_start_pyramid', { code: room.code });
+    setGame(prev => prev ? { ...prev, myVotedStart: true } : prev);
+  }
+
+  function handleReadyPyramid() {
+    socket.emit('ready_pyramid', { code: room.code });
+    setGame(prev => prev ? { ...prev, myReadyPyramid: true } : prev);
   }
 
   function handleVoteRematch() {
@@ -148,6 +168,8 @@ export default function App() {
         onVote={handleVote}
         onAnswer={handleAnswer}
         onReadyNext={handleReadyNext}
+        onVoteStartPyramid={handleVoteStartPyramid}
+        onReadyPyramid={handleReadyPyramid}
         onVoteRematch={handleVoteRematch}
         onGoHome={handleGoHome}
       />

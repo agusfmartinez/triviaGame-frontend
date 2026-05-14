@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 const medals = ['🥇', '🥈', '🥉'];
 
 export default function GameOver({ game, myId, rematch, onVoteRematch, onGoHome }) {
-  const { scoreboard = [], winner } = game;
+  const { scoreboard = [], winner, fromPyramid } = game;
   const { count, totalPlayers, timerStarted, timeLimit, myVoted } = rematch;
   const [timeLeft, setTimeLeft] = useState(timeLimit);
 
@@ -22,7 +22,7 @@ export default function GameOver({ game, myId, rematch, onVoteRematch, onGoHome 
 
       {winner && (
         <p style={{ color: '#e8a838', fontSize: 20, marginBottom: 32 }}>
-          🏆 Ganó {winner.nickname} con {winner.score.toLocaleString()} pts
+          {fromPyramid ? `🏆 ¡${winner.nickname} conquistó la pirámide!` : `🏆 Ganó ${winner.nickname} con ${(winner.score || 0).toLocaleString()} pts`}
         </p>
       )}
 
@@ -45,9 +45,11 @@ export default function GameOver({ game, myId, rematch, onVoteRematch, onGoHome 
             <span style={{ flex: 1, textAlign: 'left', marginLeft: 12, fontWeight: p.id === myId ? 'bold' : 'normal' }}>
               {p.nickname}
             </span>
-            <span style={{ fontWeight: 'bold', fontSize: 18 }}>
-              {p.score.toLocaleString()} pts
-            </span>
+            {!fromPyramid && (
+              <span style={{ fontWeight: 'bold', fontSize: 18 }}>
+                {(p.score || 0).toLocaleString()} pts
+              </span>
+            )}
           </div>
         ))}
       </div>
