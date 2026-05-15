@@ -169,7 +169,7 @@ export function SoundToggle() {
   }
   return (
     <button onClick={toggle} aria-label={muted ? 'Activar sonido' : 'Silenciar'} style={{
-      position: 'fixed', top: 'calc(10px + var(--safe-top))', right: 12,
+      position: 'fixed', bottom: 'calc(16px + var(--safe-bottom, 0px))', right: 12,
       width: 40, height: 40, borderRadius: '50%',
       background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)',
       WebkitBackdropFilter: 'blur(10px)',
