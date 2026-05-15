@@ -1,3 +1,4 @@
+// src/game/states.js — phases the backend dispatches via `phase_changed`
 export const STATES = {
   LOBBY: 'LOBBY',
   CATEGORY_VOTE: 'CATEGORY_VOTE',

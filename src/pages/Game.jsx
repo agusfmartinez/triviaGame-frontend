@@ -10,14 +10,21 @@ import FinalPyramid from '../components/FinalPyramid';
 import PyramidResult from '../components/PyramidResult';
 import PyramidScoreboard from '../components/PyramidScoreboard';
 import GameOver from '../components/GameOver';
+import { PALETTE } from '../design/theme';
 
 const IS_DEV = import.meta.env.DEV;
 
-export default function Game({ game, room, myId, rematch, onVote, onAnswer, onReadyNext, onUseAttack, onUseBombita, onVoteStartPyramid, onReadyPyramid, onVoteRematch, onGoHome }) {
+export default function Game({
+  game, room, myId, rematch,
+  onVote, onAnswer, onReadyNext, onUseAttack, onUseBombita,
+  onVoteStartPyramid, onReadyPyramid, onVoteRematch, onGoHome,
+}) {
   if (!game) {
     return (
-      <div className="container" style={{ paddingTop: 60, textAlign: 'center' }}>
-        <p style={{ color: '#aaa' }}>Iniciando partida...</p>
+      <div className="tz-container" style={{ justifyContent: 'center', alignItems: 'center' }}>
+        <p style={{ color: PALETTE.textDim, fontFamily: 'var(--font-display)', fontSize: 16 }}>
+          Iniciando partida...
+        </p>
       </div>
     );
   }
@@ -28,7 +35,7 @@ export default function Game({ game, room, myId, rematch, onVote, onAnswer, onRe
 
   const props = { game, room, myId };
 
-  let content;
+  let content = null;
   switch (game.phase) {
     case STATES.CATEGORY_VOTE:
       content = <CategoryVote {...props} onVote={onVote} />; break;
@@ -50,8 +57,7 @@ export default function Game({ game, room, myId, rematch, onVote, onAnswer, onRe
       content = <PyramidScoreboard {...props} onReadyPyramid={onReadyPyramid} onUseAttack={onUseAttack} />; break;
     case STATES.GAME_OVER:
       content = <GameOver {...props} rematch={rematch} onVoteRematch={onVoteRematch} onGoHome={onGoHome} />; break;
-    default:
-      content = null;
+    default: content = null;
   }
 
   const showSkip = IS_DEV && game.phase !== STATES.GAME_OVER;
@@ -60,23 +66,15 @@ export default function Game({ game, room, myId, rematch, onVote, onAnswer, onRe
     <>
       {content}
       {showSkip && (
-        <button
-          onClick={handleSkip}
-          style={{
-            position: 'fixed',
-            bottom: 16,
-            right: 16,
-            background: '#ff9800',
-            color: '#000',
-            fontSize: 12,
-            padding: '6px 12px',
-            borderRadius: 6,
-            opacity: 0.8,
-            zIndex: 9999,
-          }}
-        >
-          ⏭ DEV SKIP
-        </button>
+        <button onClick={handleSkip} style={{
+          position: 'fixed', bottom: 'calc(12px + var(--safe-bottom))', right: 12,
+          background: PALETTE.accent, color: PALETTE.bg0,
+          fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 11,
+          padding: '6px 12px', borderRadius: 12,
+          border: 'none', cursor: 'pointer', zIndex: 99,
+          boxShadow: `0 3px 0 ${PALETTE.accentDark}`,
+          opacity: 0.85,
+        }}>⏭ DEV SKIP</button>
       )}
     </>
   );

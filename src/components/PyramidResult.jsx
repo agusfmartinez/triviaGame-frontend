@@ -1,112 +1,129 @@
-import AttackLog from './AttackLog';
+import { useEffect, useRef } from 'react';
+import PyramidViz from '../design/Pyramid';
+import { PALETTE, OPTION_COLORS } from '../design/theme';
+import { playSound } from '../design/sounds';
+import { emitFeedback } from '../design/feedback';
 
 export default function PyramidResult({ game, myId }) {
   const {
-    movements = {},
-    correctIndex,
-    options = [],
-    playerAnswers = {},
-    questionNumber,
-    winnerId,
-    winnerNickname,
-    timeLeft,
-    attackLog = [],
+    movements = {}, correctIndex, options = [],
+    playerAnswers = {}, questionNumber,
+    positions = {}, pyramidHeight,
+    winnerId, winnerNickname, timeLeft,
   } = game;
 
   const myAnswer = playerAnswers[myId];
   const myMovement = movements[myId] ?? 0;
+  const direction = myMovement > 0 ? 'up' : myMovement < 0 ? 'down' : 'stay';
 
-  const players = Object.entries(playerAnswers).sort((a, b) => {
-    const ma = movements[a[0]] ?? 0;
-    const mb = movements[b[0]] ?? 0;
-    return mb - ma;
-  });
+  const played = useRef(false);
+  useEffect(() => {
+    if (played.current) return; played.current = true;
+    if (winnerId) { playSound('win'); emitFeedback('confetti'); }
+    else if (direction === 'up') { playSound('stepUp'); emitFeedback('confetti'); }
+    else if (direction === 'down') { playSound('stepDown'); emitFeedback('shake'); }
+    else playSound('pop');
+  }, []);
 
-  const movLabel = (mov) => mov > 0 ? '↑ +1' : mov < 0 ? '↓ -1' : '→ igual';
-  const movColor = (mov) => mov > 0 ? '#4CAF50' : mov < 0 ? '#e94560' : '#aaa';
+  // Decorate positions with movement for animation
+  const decoratedPositions = Object.fromEntries(
+    Object.entries(positions).map(([id, data]) => {
+      const mov = movements[id] ?? 0;
+      return [id, { ...data, justMoved: mov > 0 ? 'up' : mov < 0 ? 'down' : null }];
+    })
+  );
 
   return (
-    <div className="container" style={{ paddingTop: 16 }}>
-      <div style={{ textAlign: 'center', marginBottom: 12 }}>
-        <p style={{ color: '#e8a838', fontWeight: 'bold', fontSize: 14 }}>🏆 Pirámide · Resultado {questionNumber}</p>
+    <div className="tz-container">
+      <div style={{ textAlign: 'center' }}>
+        <div style={{
+          fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700,
+          color: PALETTE.accent, letterSpacing: 2, textTransform: 'uppercase',
+        }}>🏆 Pirámide · Resultado {questionNumber}</div>
       </div>
 
-      {winnerId && (
+      {winnerId ? (
         <div style={{
-          padding: '14px',
-          borderRadius: 10,
-          background: '#1a3a1a',
-          border: '2px solid #e8a838',
-          textAlign: 'center',
-          marginBottom: 14,
-          fontSize: 18,
-          fontWeight: 'bold',
-          color: '#e8a838',
+          padding: 16, borderRadius: 18,
+          background: `linear-gradient(135deg, ${PALETTE.accent}, ${PALETTE.primary})`,
+          color: PALETTE.bg0, textAlign: 'center',
+          fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18,
+          boxShadow: `0 6px 0 ${PALETTE.primaryDark}`,
+          animation: 'popIn .5s cubic-bezier(.34,1.56,.64,1)',
         }}>
           🏆 ¡{winnerNickname} llegó a la cima y ganó!
         </div>
-      )}
-
-      {myAnswer && (
-        <div style={{
-          padding: '10px 14px',
-          borderRadius: 8,
-          background: myAnswer.correct ? '#1a3a1a' : '#3a1a1a',
-          border: `1px solid ${myAnswer.correct ? '#4CAF50' : '#e94560'}`,
-          marginBottom: 12,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-          <span style={{ fontSize: 15 }}>
-            {myAnswer.correct ? '✓ Correcto' : myAnswer.answerIndex !== null ? '✗ Incorrecto' : '✗ No respondiste'}
-          </span>
-          <span style={{ fontWeight: 'bold', color: movColor(myMovement) }}>
-            {movLabel(myMovement)}
-          </span>
+      ) : (
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 700,
+            color: direction === 'up' ? PALETTE.success : direction === 'down' ? PALETTE.danger : PALETTE.textDim,
+            letterSpacing: -1,
+            textShadow: direction !== 'stay'
+              ? `0 4px 0 ${direction === 'up' ? PALETTE.successDark : PALETTE.dangerDark}` : 'none',
+          }}>{direction === 'up' ? '¡SUBÍS!' : direction === 'down' ? 'BAJÁS...' : 'Quedás igual'}</div>
         </div>
       )}
 
+      {/* Animated pyramid */}
+      {pyramidHeight > 0 && (
+        <PyramidViz
+          positions={decoratedPositions}
+          pyramidHeight={pyramidHeight}
+          highlightId={myId}
+          animate
+          compact
+        />
+      )}
+
+      {/* Correct answer */}
       <div style={{
-        padding: '10px 14px',
-        borderRadius: 8,
-        background: '#1a3a1a',
-        border: '1px solid #4CAF50',
-        marginBottom: 16,
-        fontSize: 14,
-        color: '#4CAF50',
+        background: PALETTE.surfaceSolid, borderRadius: 16,
+        border: `2px solid ${PALETTE.success}`,
+        padding: 12, display: 'flex', alignItems: 'center', gap: 10,
       }}>
-        ✓ Respuesta correcta: <strong>{options[correctIndex]}</strong>
+        <div style={{
+          width: 30, height: 30, borderRadius: 8, background: PALETTE.success,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 16, color: '#fff', flexShrink: 0,
+        }}>✓</div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{
+            fontFamily: 'var(--font-body)', fontSize: 10, color: PALETTE.textDim,
+            fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase',
+          }}>Respuesta correcta</div>
+          <div style={{
+            fontFamily: 'var(--font-display)', fontSize: 15, color: PALETTE.text, fontWeight: 700,
+            textWrap: 'pretty',
+          }}>{options[correctIndex]}</div>
+        </div>
       </div>
 
-      <AttackLog attackLog={attackLog} />
-
-      <div style={{ marginBottom: 12 }}>
-        {players.map(([id, p]) => {
-          const mov = movements[id] ?? 0;
-          const isMe = id === myId;
+      {/* Vote distribution */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+        {options.map((opt, idx) => {
+          const voters = Object.values(playerAnswers).filter(p => p.answerIndex === idx);
+          const isCorrect = idx === correctIndex;
           return (
-            <div
-              key={id}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '8px 12px',
-                marginBottom: 5,
-                borderRadius: 8,
-                background: isMe ? '#1e1e3a' : '#16213e',
-                border: `1px solid ${isMe ? '#e94560' : '#222'}`,
-              }}
-            >
-              <span style={{ fontWeight: isMe ? 'bold' : 'normal', fontSize: 14 }}>{p.nickname}</span>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center', fontSize: 13 }}>
-                <span style={{ color: p.correct ? '#4CAF50' : p.answerIndex !== null ? '#e94560' : '#555' }}>
-                  {p.correct ? '✓' : p.answerIndex !== null ? '✗' : '—'}
-                </span>
-                <span style={{ fontWeight: 'bold', color: movColor(mov), minWidth: 40, textAlign: 'right' }}>
-                  {movLabel(mov)}
-                </span>
+            <div key={idx} style={{
+              padding: '8px 12px', borderRadius: 12,
+              background: isCorrect ? `${PALETTE.success}22` : PALETTE.surface,
+              border: `1.5px solid ${isCorrect ? PALETTE.success : PALETTE.border}`,
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8,
+            }}>
+              <span style={{
+                color: isCorrect ? PALETTE.success : PALETTE.textDim,
+                fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600,
+                flex: 1, minWidth: 0,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>{isCorrect ? '✓ ' : ''}{opt}</span>
+              <div style={{ display: 'flex', gap: 3 }}>
+                {voters.map((p, i) => (
+                  <span key={i} title={p.nickname} style={{
+                    width: 8, height: 8, borderRadius: '50%',
+                    background: OPTION_COLORS[idx % 4],
+                  }} />
+                ))}
               </div>
             </div>
           );
@@ -114,9 +131,10 @@ export default function PyramidResult({ game, myId }) {
       </div>
 
       {!winnerId && (
-        <p style={{ textAlign: 'center', color: '#aaa', fontSize: 13 }}>
-          Ver posiciones en {timeLeft}s...
-        </p>
+        <p style={{
+          textAlign: 'center', color: PALETTE.textDim,
+          fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600,
+        }}>Posiciones en {timeLeft}s...</p>
       )}
     </div>
   );

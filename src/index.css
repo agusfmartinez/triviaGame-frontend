@@ -1,53 +1,267 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* src/index.css — TRIVIAZO global styles, design tokens, keyframes, motion */
+
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+:root {
+  /* Berry Pop palette — keep in sync with src/design/theme.js */
+  --bg0: #180a2e;
+  --bg1: #2a1454;
+  --bg2: #3d1f6e;
+  --surface: rgba(255,255,255,0.07);
+  --surface-solid: #251049;
+  --border: rgba(255,255,255,0.14);
+  --text: #FFF5E6;
+  --text-dim: rgba(255,245,230,0.65);
+  --text-dimmer: rgba(255,245,230,0.4);
+  --primary: #FF3D8A;
+  --primary-dark: #C81E66;
+  --accent: #FFD166;
+  --accent-dark: #E6B33A;
+  --success: #06D6A0;
+  --success-dark: #04A57A;
+  --info: #4CC9F0;
+  --info-dark: #0E8FB8;
+  --danger: #FF5C5C;
+  --danger-dark: #B33B3B;
+
+  --font-display: "Fredoka", system-ui, sans-serif;
+  --font-body: "Plus Jakarta Sans", system-ui, sans-serif;
+
+  /* Safe area for notch / home indicator */
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; }
+*, *::before, *::after { margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  font-family: sans-serif;
-  background: #1a1a2e;
-  color: #eee;
-  min-height: 100vh;
+  background: var(--bg0);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  overscroll-behavior: none;
+  touch-action: manipulation;
 }
 
 button {
-  cursor: pointer;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  background: #e94560;
-  color: white;
-  transition: opacity 0.2s;
-}
-
-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-button:not(:disabled):hover {
-  opacity: 0.85;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 input {
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #333;
-  background: #16213e;
-  color: #eee;
-  font-size: 16px;
+  font-family: inherit;
+  -webkit-appearance: none;
+}
+
+/* Layout container — mobile-first 480 max */
+.tz-container {
   width: 100%;
-}
-
-input:focus {
-  outline: none;
-  border-color: #e94560;
-}
-
-.container {
   max-width: 480px;
   margin: 0 auto;
-  padding: 20px;
+  padding: calc(16px + var(--safe-top)) 20px calc(40px + var(--safe-bottom));
+  min-height: 100dvh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  isolation: isolate;
 }
+
+/* Hide scrollbars but keep scrolling */
+.tz-container::-webkit-scrollbar { width: 0; height: 0; }
+
+/* ─── Ambient background — always fixed behind content ──────────────────── */
+.tz-bg {
+  position: fixed; inset: 0;
+  z-index: -1; overflow: hidden;
+  background: linear-gradient(160deg, var(--bg0) 0%, var(--bg1) 60%, var(--bg2) 100%);
+}
+.tz-bg-blob { position: absolute; border-radius: 50%; }
+.tz-bg-blob-1 { top: -20%; left: -20%; width: 70%; height: 50%; background: var(--primary); opacity: 0.18; filter: blur(60px); animation: blobFloat1 12s ease-in-out infinite; }
+.tz-bg-blob-2 { bottom: -15%; right: -20%; width: 60%; height: 55%; background: var(--info); opacity: 0.15; filter: blur(70px); animation: blobFloat2 14s ease-in-out infinite; }
+.tz-bg-blob-3 { top: 40%; right: 10%; width: 40%; height: 30%; background: var(--accent); opacity: 0.10; filter: blur(50px); animation: blobFloat3 10s ease-in-out infinite; }
+
+/* ─── Keyframes ─────────────────────────────────────────────────────────── */
+@keyframes confettiFall {
+  0%   { transform: translate(0,0) rotate(var(--rot)); opacity: 1; }
+  100% { transform: translate(var(--vx), calc(var(--vy) * -1 + 600px)) rotate(var(--rotE)); opacity: 0; }
+}
+@keyframes shake {
+  0%, 100% { transform: translate(0,0); }
+  10% { transform: translate(-5px, 3px) rotate(-0.4deg); }
+  20% { transform: translate(6px, -3px) rotate(0.4deg); }
+  30% { transform: translate(-4px, 4px) rotate(-0.3deg); }
+  40% { transform: translate(5px, -3px) rotate(0.3deg); }
+  50% { transform: translate(-3px, 2px); }
+  60% { transform: translate(3px, -2px); }
+  70% { transform: translate(-2px, 1px); }
+  80% { transform: translate(1px, -1px); }
+}
+@keyframes logoBounce {
+  0%, 100% { transform: rotate(-2deg) translateY(0); }
+  50%      { transform: rotate(-2deg) translateY(-6px); }
+}
+@keyframes floatY1 { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-12px) rotate(8deg); } }
+@keyframes floatY2 { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-10px) rotate(-6deg); } }
+@keyframes floatY3 { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-14px) rotate(10deg); } }
+@keyframes blobFloat1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(30px, 20px) scale(1.1); } }
+@keyframes blobFloat2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-25px, -15px) scale(1.15); } }
+@keyframes blobFloat3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(15px, -20px) scale(1.05); } }
+
+@keyframes slideInUp   { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideInDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes popIn       { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+@keyframes fadeIn      { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUpSheet{ from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes phaseFadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+
+@keyframes countdownPop {
+  0%   { opacity: 0; transform: scale(0.3) rotate(-15deg); }
+  50%  { opacity: 1; transform: scale(1.15) rotate(2deg); }
+  80%  { opacity: 1; transform: scale(1) rotate(0); }
+  100% { opacity: 0; transform: scale(1.6) rotate(0); }
+}
+
+/* Freeze */
+@keyframes freezeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes iceBorder {
+  0%,100% { box-shadow: 0 0 30px rgba(76,201,240,0.6), inset 0 0 20px rgba(180,230,255,0.4); }
+  50%     { box-shadow: 0 0 50px rgba(76,201,240,0.9), inset 0 0 30px rgba(180,230,255,0.6); }
+}
+@keyframes snowFallShort {
+  0%   { transform: translateY(0) rotate(0); opacity: 0; }
+  15%  { opacity: 0.9; }
+  100% { transform: translateY(380px) rotate(360deg); opacity: 0; }
+}
+@keyframes iceShimmer {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.15); }
+}
+
+/* Sticky */
+@keyframes stickyBlob {
+  0%, 100% { transform: translate(-50%,-50%) scale(1) rotate(var(--r,0deg)); border-radius: 60% 40% 50% 50% / 60% 50% 50% 40%; }
+  33%      { transform: translate(-50%,-50%) scale(1.1) rotate(calc(var(--r,0deg) + 15deg));  border-radius: 40% 60% 40% 60% / 50% 60% 40% 50%; }
+  66%      { transform: translate(-50%,-50%) scale(0.95) rotate(calc(var(--r,0deg) - 10deg)); border-radius: 50% 50% 60% 40% / 40% 50% 60% 50%; }
+}
+@keyframes slimeDrip {
+  0%, 100% { transform: translateY(0) scaleY(1); opacity: 0.85; }
+  50%      { transform: translateY(20px) scaleY(1.4); opacity: 1; }
+}
+
+/* Hide */
+@keyframes darkCloud {
+  0%, 100% { transform: translate(0,0) scale(1); opacity: 0.6; }
+  50%      { transform: translate(30px,-20px) scale(1.2); opacity: 0.9; }
+}
+@keyframes eyeBlink {
+  0%, 45%, 55%, 100% { transform: translate(-50%, -50%) scaleY(1); }
+  50%                { transform: translate(-50%, -50%) scaleY(0.1); }
+}
+
+/* Active attack banner icon */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-8deg) scale(1); }
+  50%      { transform: rotate(8deg) scale(1.1); }
+}
+
+/* Shuffle (confuse) */
+@keyframes shuffleSwap {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(0.92) rotate(-2deg); }
+  100% { transform: scale(1); }
+}
+
+/* Pyramid */
+@keyframes pyramidPop {
+  from { opacity: 0; transform: scale(0.6) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes avatarBounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+@keyframes avatarRiseUp {
+  0%   { transform: translateY(40px) scale(0.7); opacity: 0; }
+  50%  { transform: translateY(-6px) scale(1.15); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes avatarSinkDown {
+  0%   { transform: translateY(-40px) scale(0.7); opacity: 0; }
+  50%  { transform: translateY(4px) scale(1.1); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes moveIndicator {
+  0%   { opacity: 0; transform: translate(-50%, 6px) scale(0.5); }
+  30%  { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  70%  { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -4px) scale(0.8); }
+}
+
+/* Step climb / fall animation for PyramidResult — element rests at final bottom, animation starts from opposite */
+@keyframes stepUp {
+  0%   { transform: translateY(70px) scale(1); }
+  40%  { transform: translateY(30px) scale(1.2); }
+  60%  { transform: translateY(-10px) scale(1.1); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes stepDown {
+  0%   { transform: translateY(-70px) scale(1); }
+  40%  { transform: translateY(-30px) scale(0.9); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* ─── Motion gating ─────────────────────────────────────────────────────── */
+/* Respect prefers-reduced-motion automatically */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ─── Utility: chunky button base ───────────────────────────────────────── */
+.tz-btn {
+  appearance: none; border: none;
+  font-family: var(--font-display);
+  font-size: 18px; font-weight: 700; letter-spacing: 0.5px;
+  padding: 16px 24px; border-radius: 22px;
+  cursor: pointer; text-transform: uppercase;
+  color: #fff;
+  transition: transform 0.08s, box-shadow 0.08s, opacity 0.15s;
+  min-height: 56px; /* mobile touch target */
+}
+.tz-btn:active:not(:disabled) { transform: translateY(4px); }
+.tz-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.tz-input {
+  width: 100%;
+  padding: 16px 18px;
+  background: var(--surface-solid);
+  border: 2.5px solid var(--border);
+  border-radius: 18px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px; font-weight: 600;
+  outline: none;
+}
+.tz-input:focus { border-color: var(--primary); }
+.tz-input.big {
+  font-family: var(--font-display);
+  font-size: 28px; font-weight: 700;
+  letter-spacing: 8px; text-align: center;
+  text-transform: uppercase;
+}
+
+/* Floating decorative doodles for Home */
+.tz-doodle { position: absolute; pointer-events: none; user-select: none; }

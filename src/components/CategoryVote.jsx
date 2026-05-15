@@ -1,81 +1,76 @@
-const COLORS = ['#e94560', '#0f3460', '#533483', '#e8a838'];
+import { ChunkyButton, TimerRing, Pill } from '../design/ui';
+import { PALETTE, OPTION_COLORS, OPTION_SHADOWS } from '../design/theme';
+import { playSound } from '../design/sounds';
+
+const CATEGORY_ICONS = ['🏛️', '🔬', '⚽', '🎬', '🎵', '🌍', '🎨', '📚'];
 
 export default function CategoryVote({ game, room, myId, onVote }) {
-  const { categories = [], votes = [0, 0, 0, 0], timeLeft, myVote, currentRound, totalRounds } = game;
-  const totalVotes = votes.reduce((a, b) => a + b, 0);
+  const { categories = [], votes = [], timeLeft, myVote, currentRound, totalRounds } = game;
+  const hasVoted = myVote !== undefined && myVote !== null;
 
   function handleVote(idx) {
-    if (myVote !== undefined && myVote !== null) return;
+    if (hasVoted) return;
+    playSound('pop');
     onVote(idx);
   }
 
   return (
-    <div className="container" style={{ paddingTop: 32 }}>
-      <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <p style={{ color: '#aaa', marginBottom: 2, fontSize: 13 }}>
-          Ronda {currentRound}/{totalRounds} · Votación de categoría
-        </p>
-        <div style={{ fontSize: 48, fontWeight: 'bold', color: timeLeft <= 5 ? '#e94560' : '#eee' }}>
-          {timeLeft}s
+    <div className="tz-container">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{
+            fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 700,
+            letterSpacing: 1.5, color: PALETTE.textDim, textTransform: 'uppercase',
+          }}>Ronda {currentRound}/{totalRounds}</div>
+          <div style={{
+            fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700,
+            color: PALETTE.text,
+          }}>Vota la categoría</div>
         </div>
+        <TimerRing value={timeLeft} max={10} />
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 12 }}>
         {categories.map((cat, idx) => {
-          const voteCount = votes[idx] || 0;
-          const pct = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
-          const isMyVote = myVote === idx;
-
+          const isMine = myVote === idx;
+          const v = votes[idx] || 0;
+          const color = OPTION_COLORS[idx % 4];
+          const shadow = OPTION_SHADOWS[idx % 4];
           return (
-            <button
-              key={idx}
-              onClick={() => handleVote(idx)}
-              disabled={myVote !== undefined && myVote !== null}
+            <button key={idx} onClick={() => handleVote(idx)} disabled={hasVoted && !isMine}
               style={{
-                background: COLORS[idx],
-                opacity: (myVote !== undefined && myVote !== null && !isMyVote) ? 0.5 : 1,
-                border: isMyVote ? '3px solid white' : '3px solid transparent',
-                borderRadius: 10,
-                padding: '14px 16px',
-                textAlign: 'left',
-                position: 'relative',
-                overflow: 'hidden',
-                cursor: (myVote !== undefined && myVote !== null) ? 'default' : 'pointer',
-              }}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: `${pct}%`,
-                  background: 'rgba(255,255,255,0.15)',
-                  transition: 'width 0.3s',
-                }}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
-                <span style={{ fontWeight: 'bold', fontSize: 18 }}>
-                  {isMyVote ? '✓ ' : ''}{cat}
-                </span>
-                <span style={{ fontSize: 14, opacity: 0.9 }}>
-                  {voteCount} {voteCount === 1 ? 'voto' : 'votos'} ({pct}%)
-                </span>
-              </div>
+                appearance: 'none', border: 'none', textAlign: 'left',
+                background: color, color: PALETTE.bg0,
+                fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700,
+                padding: '16px 18px', borderRadius: 22,
+                boxShadow: isMine
+                  ? `0 0 0 4px ${PALETTE.bg0}, 0 0 0 7px ${color}, 0 6px 0 ${shadow}`
+                  : `0 6px 0 ${shadow}`,
+                transform: isMine ? 'scale(1.02)' : 'scale(1)',
+                opacity: hasVoted && !isMine ? 0.5 : 1,
+                transition: 'transform .15s, box-shadow .15s, opacity .2s',
+                display: 'flex', alignItems: 'center', gap: 14,
+                cursor: hasVoted ? 'default' : 'pointer',
+                animation: `slideInUp .35s ${idx * 0.06}s backwards`,
+                minHeight: 60,
+              }}>
+              <span style={{ fontSize: 32 }}>{CATEGORY_ICONS[idx % CATEGORY_ICONS.length]}</span>
+              <span style={{ flex: 1 }}>{cat}</span>
+              <span style={{
+                background: 'rgba(0,0,0,0.18)', color: '#fff',
+                borderRadius: 12, padding: '4px 12px',
+                fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 700,
+                minWidth: 32, textAlign: 'center',
+              }}>{v}</span>
             </button>
           );
         })}
       </div>
 
-      {myVote === null || myVote === undefined ? (
-        <p style={{ textAlign: 'center', color: '#aaa', marginTop: 16, fontSize: 14 }}>
-          Elegí una categoría
-        </p>
-      ) : (
-        <p style={{ textAlign: 'center', color: '#aaa', marginTop: 16, fontSize: 14 }}>
-          Voto registrado. Esperando resultados...
-        </p>
-      )}
+      <p style={{
+        textAlign: 'center', color: PALETTE.textDim,
+        fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600,
+      }}>{hasVoted ? '✓ Voto registrado. Esperando resultados...' : 'Elegí una categoría'}</p>
     </div>
   );
 }
