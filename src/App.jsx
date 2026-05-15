@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { socket } from './socket/socket';
 import Home from './pages/Home';
 import Lobby from './pages/Lobby';
 import Game from './pages/Game';
 import { AnimatedBg, Confetti, ScreenShake, useScreenShake } from './design/effects';
-import { SoundToggle } from './design/ui';
+import WakeupLoader from './components/WakeupLoader';
+import SettingsDrawer from './components/SettingsDrawer';
 import { onFeedback } from './design/feedback';
 import { unlockAudio, playSound } from './design/sounds';
 
@@ -17,6 +18,16 @@ export default function App() {
   const [error, setError] = useState('');
   const [game, setGame] = useState(null);
   const [rematch, setRematch] = useState(REMATCH_INITIAL);
+  const [socketReady, setSocketReady] = useState(socket.connected);
+  const [slowWakeup, setSlowWakeup] = useState(false);
+
+  useEffect(() => {
+    if (socket.connected) return;
+    const slow = setTimeout(() => setSlowWakeup(true), 5000);
+    const onConnect = () => { setSocketReady(true); clearTimeout(slow); };
+    socket.on('connect', onConnect);
+    return () => { socket.off('connect', onConnect); clearTimeout(slow); };
+  }, []);
 
   // Feedback bus: confetti + screen shake
   const [confettiKey, setConfettiKey] = useState(0);
@@ -165,10 +176,19 @@ export default function App() {
     setRematch(REMATCH_INITIAL); setError('');
   }
 
+  if (!socketReady) {
+    return (
+      <>
+        <AnimatedBg />
+        <WakeupLoader slowWakeup={slowWakeup} />
+      </>
+    );
+  }
+
   return (
     <>
       <AnimatedBg />
-      <SoundToggle />
+      <SettingsDrawer room={room} myId={myId} onLeave={handleGoHome} />
       <ScreenShake nonce={shakeNonce}>
         {page === 'game' && (
           <Game

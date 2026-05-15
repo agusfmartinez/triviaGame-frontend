@@ -91,6 +91,15 @@ export default function Home({ error, onClearError }) {
       )}
 
       <div style={{ flex: 1 }} />
+
+      <div style={{
+        textAlign: 'center',
+        fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600,
+        color: PALETTE.textDim, letterSpacing: 1, textTransform: 'uppercase',
+        paddingBottom: 8,
+      }}>
+        Beta v0.1 · Pueden haber bugs 🐛
+      </div>
     </div>
   );
 }
