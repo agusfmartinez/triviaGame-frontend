@@ -2,7 +2,7 @@ import { ChunkyButton, TimerRing, Pill } from '../design/ui';
 import { PALETTE, OPTION_COLORS, OPTION_SHADOWS } from '../design/theme';
 import { playSound } from '../design/sounds';
 
-const CATEGORY_ICONS = ['🏛️', '🔬', '⚽', '🎬', '🎵', '🌍', '🎨', '📚'];
+// const CATEGORY_ICONS = ['🏛️', '🔬', '⚽', '🎬', '🎵', '🌍', '🎨', '📚'];
 
 export default function CategoryVote({ game, room, myId, onVote }) {
   const { categories = [], votes = [], timeLeft, myVote, currentRound, totalRounds } = game;
@@ -54,7 +54,7 @@ export default function CategoryVote({ game, room, myId, onVote }) {
                 animation: `slideInUp .35s ${idx * 0.06}s backwards`,
                 minHeight: 60,
               }}>
-              <span style={{ fontSize: 32 }}>{CATEGORY_ICONS[idx % CATEGORY_ICONS.length]}</span>
+              {/* <span style={{ fontSize: 32 }}>{CATEGORY_ICONS[idx % CATEGORY_ICONS.length]}</span> */}
               <span style={{ flex: 1 }}>{cat}</span>
               <span style={{
                 background: 'rgba(0,0,0,0.18)', color: '#fff',

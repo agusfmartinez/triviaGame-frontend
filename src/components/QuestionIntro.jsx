@@ -3,10 +3,10 @@ import { CountdownNumber } from '../design/effects';
 import { PALETTE } from '../design/theme';
 import { playSound } from '../design/sounds';
 
-const CATEGORY_ICONS_BY_NAME = {
-  Historia: '🏛️', Ciencia: '🔬', Deportes: '⚽', Cine: '🎬',
-  Música: '🎵', Geografía: '🌍', Arte: '🎨', Literatura: '📚',
-};
+// const CATEGORY_ICONS_BY_NAME = {
+//   Historia: '🏛️', Ciencia: '🔬', Deportes: '⚽', Cine: '🎬',
+//   Música: '🎵', Geografía: '🌍', Arte: '🎨', Literatura: '📚',
+// };
 
 export default function QuestionIntro({ game }) {
   const { questionNumber, totalQuestions, categoryName, timeLeft } = game;
@@ -23,7 +23,7 @@ export default function QuestionIntro({ game }) {
   }, [timeLeft]);
 
   const display = timeLeft === 0 ? 'GO!' : timeLeft;
-  const icon = categoryName && CATEGORY_ICONS_BY_NAME[categoryName];
+  // const icon = categoryName && CATEGORY_ICONS_BY_NAME[categoryName];
 
   return (
     <div className="tz-container" style={{ alignItems: 'center', justifyContent: 'center' }}>
@@ -40,7 +40,7 @@ export default function QuestionIntro({ game }) {
           borderRadius: 18, padding: '8px 18px',
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
-          {icon && <span style={{ fontSize: 26 }}>{icon}</span>}
+          {/* {icon && <span style={{ fontSize: 26 }}>{icon}</span>} */}
           <span style={{
             fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, color: PALETTE.accent,
           }}>{categoryName}</span>
