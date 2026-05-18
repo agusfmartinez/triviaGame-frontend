@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { FreezeOverlay, StickyOverlay, HideOverlay } from '../design/effects';
 import { TimerRing, ChunkyButton, Pill } from '../design/ui';
-import { PALETTE, OPTION_COLORS, OPTION_SHADOWS, ATTACK_META } from '../design/theme';
+import { PALETTE, OPTION_COLORS, OPTION_SHADOWS, ATTACK_META, DEFENSE_META } from '../design/theme';
 import { playSound } from '../design/sounds';
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D'];
 
-export default function QuestionActive({ game, room, myId, onAnswer, onUseBombita }) {
+export default function QuestionActive({ game, room, myId, onAnswer, onUseBombita, activatedDefense }) {
   const {
     question, options = [], timeLeft, timeLimit,
     questionNumber, totalQuestions, myAnswer,
@@ -92,11 +92,6 @@ export default function QuestionActive({ game, room, myId, onAnswer, onUseBombit
         }}>{question}</div>
       </div>
 
-      {/* Active effect banner */}
-      {myEffects.length > 0 && (
-        <ActiveEffectBanner effects={myEffects} />
-      )}
-
       {/* Options with scoped overlays */}
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {displayOrder.map((originalIdx, displayPos) => {
@@ -139,15 +134,46 @@ export default function QuestionActive({ game, room, myId, onAnswer, onUseBombit
         <HideOverlay active={isHidden} />
       </div>
 
+      {/* Active effect banner */}
+      {myEffects.length > 0 && (
+        <ActiveEffectBanner effects={myEffects} />
+      )}
+
+      {/* Used defense banner */}
+      {activatedDefense && <UsedDefenseBanner type={activatedDefense} />}
+
       {/* Bombita */}
-      {myDefense === 'bombita' && canAnswer && (
+      {myDefense === 'bombita' && canAnswer && bombitaHide.length === 0 && (
         <ChunkyButton fullWidth color={PALETTE.accent} textColor={PALETTE.bg0} shadow={PALETTE.accentDark}
           onClick={() => { playSound('bombita'); onUseBombita(); }}
           style={{ fontSize: 16 }}>
-          💣 Usar Bombita 50/50
+          💣 Usar Bombita
         </ChunkyButton>
       )}
 
+    </div>
+  );
+}
+
+function UsedDefenseBanner({ type }) {
+  const meta = DEFENSE_META[type];
+  if (!meta) return null;
+  return (
+    <div style={{
+      background: `${meta.color}22`, border: `2px solid ${meta.color}`,
+      borderRadius: 14, padding: '10px 14px',
+      display: 'flex', alignItems: 'center', gap: 10,
+      animation: 'slideInDown .35s cubic-bezier(.34,1.56,.64,1)',
+    }}>
+      <div style={{ fontSize: 26 }}>{meta.icon}</div>
+      <div style={{ flex: 1 }}>
+        <div style={{
+          fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, color: meta.color,
+        }}>Usaste {meta.label}</div>
+        <div style={{
+          fontFamily: 'var(--font-body)', fontSize: 11, color: PALETTE.textDim, marginTop: 1,
+        }}>{meta.desc}</div>
+      </div>
     </div>
   );
 }

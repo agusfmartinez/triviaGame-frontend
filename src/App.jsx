@@ -19,6 +19,7 @@ export default function App() {
   const [game, setGame] = useState(null);
   const [rematch, setRematch] = useState(REMATCH_INITIAL);
   const [socketReady, setSocketReady] = useState(socket.connected);
+  const [activatedDefense, setActivatedDefense] = useState(null);
   const [slowWakeup, setSlowWakeup] = useState(false);
 
   useEffect(() => {
@@ -83,6 +84,7 @@ export default function App() {
     });
 
     socket.on('phase_changed', (data) => {
+      if (data.phase === 'QUESTION_RESULT' || data.phase === 'PYRAMID_RESULT') setActivatedDefense(null);
       setGame({ ...data, answeredCount: 0, answeredPlayers: [], bombitaHide: [], timeLeft: data.timeLimit || 0 });
       if (data.phase === 'GAME_OVER') setRematch(REMATCH_INITIAL);
     });
@@ -167,6 +169,12 @@ export default function App() {
     socket.emit('ready_pyramid', { code: room.code });
     setGame(prev => prev ? { ...prev, myReadyPyramid: true } : prev);
   }
+  function handleActivateDefense() {
+    const defenseType = game?.defenses?.[myId];
+    if (!defenseType || defenseType === 'bombita') return;
+    socket.emit('activate_defense', { code: room.code });
+    setActivatedDefense(defenseType);
+  }
   function handleVoteRematch() {
     socket.emit('vote_rematch', { code: room.code });
     setRematch(prev => ({ ...prev, myVoted: true }));
@@ -200,6 +208,8 @@ export default function App() {
             onReadyPyramid={handleReadyPyramid}
             onVoteRematch={handleVoteRematch}
             onGoHome={handleGoHome}
+            activatedDefense={activatedDefense}
+            onActivateDefense={handleActivateDefense}
           />
         )}
         {page === 'lobby' && room && (

@@ -71,7 +71,7 @@ export default function PyramidIntro({ game, myId, onVoteStart }) {
         shadow={myVotedStart ? 'rgba(0,0,0,0.4)' : PALETTE.accentDark}
         textColor={myVotedStart ? PALETTE.textDim : PALETTE.bg0}
         disabled={!!myVotedStart} onClick={handleStart}>
-        {myVotedStart ? '✓ Listo para arrancar' : '🏆 ¡Arrancar pirámide!'}
+        {myVotedStart ? '✓ Listo para iniciar' : '🏆 ¡Iniciar pirámide!'}
       </ChunkyButton>
     </div>
   );

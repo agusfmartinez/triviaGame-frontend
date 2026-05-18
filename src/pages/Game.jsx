@@ -18,6 +18,7 @@ export default function Game({
   game, room, myId, rematch,
   onVote, onAnswer, onReadyNext, onUseAttack, onUseBombita,
   onVoteStartPyramid, onReadyPyramid, onVoteRematch, onGoHome,
+  activatedDefense, onActivateDefense,
 }) {
   if (!game) {
     return (
@@ -42,19 +43,19 @@ export default function Game({
     case STATES.QUESTION_INTRO:
       content = <QuestionIntro {...props} />; break;
     case STATES.QUESTION_ACTIVE:
-      content = <QuestionActive {...props} onAnswer={onAnswer} onUseBombita={onUseBombita} />; break;
+      content = <QuestionActive {...props} onAnswer={onAnswer} onUseBombita={onUseBombita} activatedDefense={activatedDefense} />; break;
     case STATES.QUESTION_RESULT:
       content = <QuestionResult {...props} />; break;
     case STATES.SCOREBOARD:
-      content = <Scoreboard {...props} onReadyNext={onReadyNext} onUseAttack={onUseAttack} />; break;
+      content = <Scoreboard {...props} onReadyNext={onReadyNext} onUseAttack={onUseAttack} activatedDefense={activatedDefense} onActivateDefense={onActivateDefense} />; break;
     case STATES.PYRAMID_INTRO:
       content = <PyramidIntro {...props} onVoteStart={onVoteStartPyramid} />; break;
     case STATES.FINAL_PYRAMID:
-      content = <FinalPyramid {...props} onAnswer={onAnswer} onUseBombita={onUseBombita} />; break;
+      content = <FinalPyramid {...props} onAnswer={onAnswer} onUseBombita={onUseBombita} activatedDefense={activatedDefense} />; break;
     case STATES.PYRAMID_RESULT:
       content = <PyramidResult {...props} />; break;
     case STATES.PYRAMID_SCOREBOARD:
-      content = <PyramidScoreboard {...props} onReadyPyramid={onReadyPyramid} onUseAttack={onUseAttack} />; break;
+      content = <PyramidScoreboard {...props} onReadyPyramid={onReadyPyramid} onUseAttack={onUseAttack} activatedDefense={activatedDefense} onActivateDefense={onActivateDefense} />; break;
     case STATES.GAME_OVER:
       content = <GameOver {...props} rematch={rematch} onVoteRematch={onVoteRematch} onGoHome={onGoHome} />; break;
     default: content = null;

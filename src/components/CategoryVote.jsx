@@ -27,7 +27,7 @@ export default function CategoryVote({ game, room, myId, onVote }) {
             color: PALETTE.text,
           }}>Vota la categoría</div>
         </div>
-        <TimerRing value={timeLeft} max={10} />
+        <TimerRing value={timeLeft} max={15} />
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 12 }}>

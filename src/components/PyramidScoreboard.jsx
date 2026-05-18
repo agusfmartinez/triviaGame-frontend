@@ -3,10 +3,10 @@ import PowerupSelector from './PowerupSelector';
 import AttackLog from './AttackLog';
 import PyramidViz from '../design/Pyramid';
 import { ChunkyButton } from '../design/ui';
-import { PALETTE } from '../design/theme';
+import { PALETTE, DEFENSE_META } from '../design/theme';
 import { playSound } from '../design/sounds';
 
-export default function PyramidScoreboard({ game, room, myId, onReadyPyramid, onUseAttack }) {
+export default function PyramidScoreboard({ game, room, myId, onReadyPyramid, onUseAttack, activatedDefense, onActivateDefense }) {
   const {
     positions = {}, pyramidHeight,
     questionNumber, readyCount = 0, totalPlayers = 0, timeLeft,
@@ -14,7 +14,6 @@ export default function PyramidScoreboard({ game, room, myId, onReadyPyramid, on
     attackLog = [], movements = {},
   } = game;
 
-  // Decorate positions with justMoved based on movements (for the visual cue)
   const decoratedPositions = Object.fromEntries(
     Object.entries(positions).map(([id, data]) => {
       const mov = movements[id];
@@ -24,6 +23,7 @@ export default function PyramidScoreboard({ game, room, myId, onReadyPyramid, on
 
   const myDefense = defenses[myId] || null;
   const hasAttack = availableAttacks.length > 0 && !myAttackUsed;
+  const canActivateDefense = myDefense && myDefense !== 'bombita' && !activatedDefense;
   const [showAttackModal, setShowAttackModal] = useState(false);
 
   function handleReady() {
@@ -55,6 +55,28 @@ export default function PyramidScoreboard({ game, room, myId, onReadyPyramid, on
       </div>
 
       <AttackLog attackLog={attackLog} />
+
+      {/* Defense section */}
+      {myDefense && myDefense !== 'bombita' && (
+        <>
+          <DefenseBadge type={myDefense} />
+          {canActivateDefense ? (
+            <ChunkyButton
+              color={DEFENSE_META[myDefense]?.color || PALETTE.primary}
+              textColor="#fff"
+              shadow="rgba(0,0,0,0.4)"
+              onClick={() => { playSound('pop'); onActivateDefense(); }}
+              style={{ fontSize: 14 }}>
+              🛡️ Usar defensa esta ronda
+            </ChunkyButton>
+          ) : activatedDefense && (
+            <div style={{
+              textAlign: 'center', fontFamily: 'var(--font-display)', fontWeight: 700,
+              fontSize: 13, color: PALETTE.success,
+            }}>✓ Defensa activada para la próxima pregunta</div>
+          )}
+        </>
+      )}
 
       <div style={{ flex: 1, minHeight: 8 }} />
 
@@ -92,6 +114,28 @@ export default function PyramidScoreboard({ game, room, myId, onReadyPyramid, on
           }}
         />
       )}
+    </div>
+  );
+}
+
+function DefenseBadge({ type }) {
+  const meta = DEFENSE_META[type];
+  if (!meta) return null;
+  return (
+    <div style={{
+      background: `${meta.color}22`, border: `2px solid ${meta.color}66`,
+      borderRadius: 14, padding: '8px 12px',
+      display: 'flex', alignItems: 'center', gap: 10,
+    }}>
+      <span style={{ fontSize: 22 }}>{meta.icon}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 13, color: meta.color,
+        }}>{meta.label}</div>
+        <div style={{
+          fontFamily: 'var(--font-body)', fontSize: 11, color: PALETTE.textDim,
+        }}>{meta.desc}</div>
+      </div>
     </div>
   );
 }

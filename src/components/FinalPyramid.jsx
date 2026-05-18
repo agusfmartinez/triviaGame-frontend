@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { FreezeOverlay, StickyOverlay, HideOverlay } from '../design/effects';
 import { TimerRing, ChunkyButton } from '../design/ui';
-import { PALETTE, OPTION_COLORS, OPTION_SHADOWS } from '../design/theme';
+import { PALETTE, OPTION_COLORS, OPTION_SHADOWS, DEFENSE_META } from '../design/theme';
 import { playSound } from '../design/sounds';
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D'];
 
 // IDENTICAL layout to QuestionActive — only the header pill changes to "🏆 PIRÁMIDE".
-export default function FinalPyramid({ game, room, myId, onAnswer, onUseBombita }) {
+export default function FinalPyramid({ game, room, myId, onAnswer, onUseBombita, activatedDefense }) {
   const {
     question, options = [], timeLeft, timeLimit,
     questionNumber, myAnswer,
@@ -94,8 +94,6 @@ export default function FinalPyramid({ game, room, myId, onAnswer, onUseBombita 
         }}>{question}</div>
       </div>
 
-      {myEffects.length > 0 && <ActiveEffectBanner effects={myEffects} />}
-
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {displayOrder.map((originalIdx, displayPos) => {
           const isMyAnswer = myAnswer === originalIdx;
@@ -136,11 +134,14 @@ export default function FinalPyramid({ game, room, myId, onAnswer, onUseBombita 
         <HideOverlay active={isHidden} />
       </div>
 
-      {myDefense === 'bombita' && canAnswer && (
+      {myEffects.length > 0 && <ActiveEffectBanner effects={myEffects} />}
+      {activatedDefense && <UsedDefenseBanner type={activatedDefense} />}
+
+      {myDefense === 'bombita' && canAnswer && bombitaHide.length === 0 && (
         <ChunkyButton fullWidth color={PALETTE.accent} textColor={PALETTE.bg0} shadow={PALETTE.accentDark}
           onClick={() => { playSound('bombita'); onUseBombita(); }}
           style={{ fontSize: 16 }}>
-          💣 Usar Bombita 50/50
+          💣 Usar Bombita
         </ChunkyButton>
       )}
 
@@ -149,6 +150,30 @@ export default function FinalPyramid({ game, room, myId, onAnswer, onUseBombita 
 }
 
 import { ATTACK_META } from '../design/theme';
+
+function UsedDefenseBanner({ type }) {
+  const meta = DEFENSE_META[type];
+  if (!meta) return null;
+  return (
+    <div style={{
+      background: `${meta.color}22`, border: `2px solid ${meta.color}`,
+      borderRadius: 14, padding: '10px 14px',
+      display: 'flex', alignItems: 'center', gap: 10,
+      animation: 'slideInDown .35s cubic-bezier(.34,1.56,.64,1)',
+    }}>
+      <div style={{ fontSize: 26 }}>{meta.icon}</div>
+      <div style={{ flex: 1 }}>
+        <div style={{
+          fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, color: meta.color,
+        }}>Usaste {meta.label}</div>
+        <div style={{
+          fontFamily: 'var(--font-body)', fontSize: 11, color: PALETTE.textDim, marginTop: 1,
+        }}>{meta.desc}</div>
+      </div>
+    </div>
+  );
+}
+
 function ActiveEffectBanner({ effects }) {
   const e = effects.includes('freeze') ? 'freeze'
           : effects.includes('hide')   ? 'hide'

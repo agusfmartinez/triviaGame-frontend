@@ -2,13 +2,13 @@ import { useState } from 'react';
 import PowerupSelector from './PowerupSelector';
 import AttackLog from './AttackLog';
 import { Avatar, ChunkyButton } from '../design/ui';
-import { PALETTE } from '../design/theme';
+import { PALETTE, DEFENSE_META } from '../design/theme';
 import { playSound } from '../design/sounds';
 
 const medals = ['🥇', '🥈', '🥉'];
 const podiumColors = [PALETTE.accent, '#C0C0C0', '#CD7F32'];
 
-export default function Scoreboard({ game, room, myId, onReadyNext, onUseAttack }) {
+export default function Scoreboard({ game, room, myId, onReadyNext, onUseAttack, activatedDefense, onActivateDefense }) {
   const {
     scoreboard = [], currentRound, totalRounds, isEndOfRound, isLast,
     timeLeft, readyCount = 0, totalPlayers = 0, myReady,
@@ -18,6 +18,7 @@ export default function Scoreboard({ game, room, myId, onReadyNext, onUseAttack 
   const myDefense = defenses[myId] || null;
   const [showAttackModal, setShowAttackModal] = useState(false);
   const hasAttack = availableAttacks.length > 0 && !myAttackUsed;
+  const canActivateDefense = myDefense && myDefense !== 'bombita' && !activatedDefense;
 
   function handleReady() {
     if (myReady) return;
@@ -89,8 +90,27 @@ export default function Scoreboard({ game, room, myId, onReadyNext, onUseAttack 
 
       <AttackLog attackLog={attackLog} />
 
-      {/* Defense indicator */}
-      {myDefense && <DefenseBadge type={myDefense} />}
+      {/* Defense section */}
+      {myDefense && myDefense !== 'bombita' && (
+        <>
+          <DefenseBadge type={myDefense} />
+          {canActivateDefense ? (
+            <ChunkyButton
+              color={DEFENSE_META[myDefense]?.color || PALETTE.primary}
+              textColor="#fff"
+              shadow="rgba(0,0,0,0.4)"
+              onClick={() => { playSound('pop'); onActivateDefense(); }}
+              style={{ fontSize: 14 }}>
+              🛡️ Usar defensa esta ronda
+            </ChunkyButton>
+          ) : activatedDefense && (
+            <div style={{
+              textAlign: 'center', fontFamily: 'var(--font-display)', fontWeight: 700,
+              fontSize: 13, color: PALETTE.success,
+            }}>✓ Defensa activada para la próxima pregunta</div>
+          )}
+        </>
+      )}
 
       <div style={{ flex: 1, minHeight: 8 }} />
 
@@ -134,7 +154,6 @@ export default function Scoreboard({ game, room, myId, onReadyNext, onUseAttack 
   );
 }
 
-import { DEFENSE_META } from '../design/theme';
 function DefenseBadge({ type }) {
   const meta = DEFENSE_META[type];
   if (!meta) return null;
